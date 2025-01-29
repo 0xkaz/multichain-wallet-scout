@@ -1,0 +1,33 @@
+{
+  "name": "multichain-wallet-scout",
+  "version": "1.0.0",
+  "description": "Multi-chain wallet generator and transaction checker for Ethereum-compatible networks",
+  "main": "index.js",
+  "scripts": {
+    "generate": "node bulk.js",
+    "generate:watch": "node watch.js",
+    "active": "node show-active-wallets.js",
+    "status": "node show-status.js",
+    "test": "node test-transaction-check.js",
+    "watch:quick": "node watch.js --interval 2",
+    "watch:slow": "node watch.js --interval 10",
+    "bulk:small": "node bulk.js 5 2",
+    "bulk:medium": "node bulk.js 20 5",
+    "bulk:large": "node bulk.js 50 10"
+  },
+  "keywords": [
+    "ethereum",
+    "wallet",
+    "blockchain",
+    "multichain",
+    "transaction-checker",
+    "crypto"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "ethers": "^6.0.0",
+    "sqlite3": "^5.0.0",
+    "axios": "^1.0.0"
+  }
+}

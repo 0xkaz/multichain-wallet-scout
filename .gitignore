@@ -1,0 +1,4 @@
+node_modules
+.env
+NOTE.md
+wallets.db
