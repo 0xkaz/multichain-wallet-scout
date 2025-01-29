@@ -99,13 +99,13 @@ async function initializeDatabase() {
 }
 
 // Send email notification for active wallet
-async function sendActiveWalletNotification(wallet, chainName) {
+async function sendActiveWalletNotification(wallet, chainName, options = {}) {
     try {
         const mailOptions = {
             from: `"${process.env.EMAIL_FROM_NAME}" <${process.env.SMTP_USER}>`,
             to: process.env.NOTIFICATION_EMAIL,
-            subject: process.env.EMAIL_SUBJECT || 'Active Wallet Found!',
-            html: `
+            subject: options.subject || process.env.EMAIL_SUBJECT || 'Active Wallet Found!',
+            html: options.template || `
                 <h2>Active Wallet Found!</h2>
                 <p>A wallet with transactions has been discovered:</p>
                 <ul>
