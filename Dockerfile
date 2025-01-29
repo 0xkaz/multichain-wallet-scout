@@ -1,14 +1,11 @@
-# Use Node.js LTS version
-FROM node:20-slim
+# Build stage
+FROM node:20-alpine3.19 AS builder
 
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies for sqlite3
-RUN apt-get update && \
-    apt-get install -y python3 make g++ && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+# Install build dependencies
+RUN apk add --no-cache python3 make g++
 
 # Copy package files
 COPY package*.json ./
@@ -19,12 +16,21 @@ RUN npm install
 # Copy application files
 COPY . .
 
+# Production stage
+FROM node:20-alpine3.19
+
+# Install runtime dependencies
+RUN apk add --no-cache python3
+
+# Set working directory
+WORKDIR /app
+
+# Copy built application from builder stage
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app ./
+
 # Create volume for database persistence
 VOLUME /app/data
-
-# Set environment variables
-ENV NODE_ENV=production
-ENV SQLITE_DB_PATH=/app/data/wallets.db
 
 # Create data directory
 RUN mkdir -p /app/data
