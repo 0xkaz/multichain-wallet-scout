@@ -1,0 +1,26 @@
+services:
+  wallet-scout:
+    build: .
+    container_name: wallet-scout
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      # Watch Mode Configuration (can be overridden by .env)
+      - WATCH_INTERVAL=${WATCH_INTERVAL:-5}
+      - WATCH_BATCH_SIZE=${WATCH_BATCH_SIZE:-10}
+      - WATCH_CHUNK_SIZE=${WATCH_CHUNK_SIZE:-5}
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "node", "-e", "const fs = require('fs'); const path = '/app/data/wallets.db'; if (!fs.existsSync(path)) process.exit(1); const stats = fs.statSync(path); if (Date.now() - stats.mtime.getTime() > 300000) process.exit(1);"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s

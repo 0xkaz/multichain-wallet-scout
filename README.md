@@ -32,8 +32,11 @@ A Node.js application that generates Ethereum-compatible wallets and checks for 
 - npm (Node Package Manager)
 - make (for Make commands)
 - SMTP server access for email notifications
+- Docker and Docker Compose (for Docker installation)
 
 ## Installation
+
+### Standard Installation
 
 1. Clone the repository:
 ```bash
@@ -58,6 +61,57 @@ nano .env
 ```
 
 4. Configure RPC endpoints (if needed) in `lib.js`
+
+### Docker Installation
+
+1. Clone the repository and configure environment:
+```bash
+git clone [repository-url]
+cd [repository-name]
+cp .env.example .env
+# Edit .env with your settings
+```
+
+2. Build and run with Docker Compose:
+```bash
+docker-compose up -d
+```
+
+3. View logs:
+```bash
+docker-compose logs -f
+```
+
+4. Stop the container:
+```bash
+docker-compose down
+```
+
+#### Docker Configuration
+
+The Docker setup includes:
+- Automatic restart on failure
+- Volume mounting for database persistence
+- Health checks every 30 seconds
+- Log rotation (max 3 files of 10MB each)
+- Environment variable configuration via .env file
+
+Environment variables can be configured in the .env file:
+```env
+# SMTP Configuration
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-specific-password
+NOTIFICATION_EMAIL=recipient@example.com
+EMAIL_SUBJECT="Active Wallet Found!"
+EMAIL_FROM_NAME="Wallet Scout"
+
+# Watch Mode Configuration
+WATCH_INTERVAL=5
+WATCH_BATCH_SIZE=10
+WATCH_CHUNK_SIZE=5
+```
 
 ## Email Configuration
 
