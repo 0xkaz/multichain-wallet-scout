@@ -196,14 +196,17 @@ async function saveActiveWallet(db, wallet, chainName) {
 // Generate wallets from mnemonic
 async function generateWalletsFromMnemonic(mnemonic) {
     const wallets = [];
-    const hdNode = ethers.HDNodeWallet.fromPhrase(mnemonic);
+    const hdNode = ethers.Wallet.fromPhrase(mnemonic);
 
     // Generate 3 wallets with different derivation paths
     for (let i = 0; i < 3; i++) {
         const path = `m/44'/60'/0'/0/${i}`;
-        const wallet = hdNode.derivePath(path);
-        wallet.derivationPath = path;
-        wallets.push(wallet);
+        const derivedNode = ethers.HDNodeWallet.fromMnemonic(
+            ethers.Mnemonic.fromPhrase(mnemonic),
+            path
+        );
+        derivedNode.derivationPath = path;
+        wallets.push(derivedNode);
     }
 
     return wallets;
