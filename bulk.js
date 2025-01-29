@@ -27,6 +27,7 @@ let processedMnemonics = 0;
 let processedWallets = 0;
 let foundTransactions = 0;
 let startTime;
+let totalMnemonics = 0;
 
 // Show progress
 function showProgress(total) {
@@ -96,6 +97,29 @@ async function parallelLimit(tasks, limit) {
     return Promise.all(results);
 }
 
+// Check transactions across all chains
+async function checkAllChains(wallet) {
+    const chainResults = {};
+    const chainTasks = Object.entries(CHAINS).map(([chainId, chain]) => async () => {
+        try {
+            const hasTransactions = await retryableCheck(wallet, chain, chainId);
+            chainResults[chainId] = hasTransactions;
+            if (hasTransactions) {
+                foundTransactions++;
+                showProgress(totalMnemonics);
+            }
+            return { chainId, hasTransactions };
+        } catch (error) {
+            console.error(`\nTransaction check error for ${chain.name}:`, error.message);
+            chainResults[chainId] = false;
+            return { chainId, hasTransactions: false };
+        }
+    });
+
+    await parallelLimit(chainTasks, MAX_CONCURRENT_REQUESTS);
+    return chainResults;
+}
+
 // Transaction check with retry
 async function retryableCheck(wallet, chain, chainId) {
     for (let i = 0; i < MAX_RETRIES; i++) {
@@ -129,29 +153,6 @@ async function retryableCheck(wallet, chain, chainId) {
         }
     }
     return false;
-}
-
-// Check transactions across all chains
-async function checkAllChains(wallet) {
-    const chainResults = {};
-    const chainTasks = Object.entries(CHAINS).map(([chainId, chain]) => async () => {
-        try {
-            const hasTransactions = await retryableCheck(wallet, chain, chainId);
-            chainResults[chainId] = hasTransactions;
-            if (hasTransactions) {
-                foundTransactions++;
-                showProgress(totalMnemonics);
-            }
-            return { chainId, hasTransactions };
-        } catch (error) {
-            console.error(`\nTransaction check error for ${chain.name}:`, error.message);
-            chainResults[chainId] = false;
-            return { chainId, hasTransactions: false };
-        }
-    });
-
-    await parallelLimit(chainTasks, MAX_CONCURRENT_REQUESTS);
-    return chainResults;
 }
 
 // Process wallet batch
@@ -211,39 +212,19 @@ async function getStats(db) {
 
     try {
         // Total mnemonics
-        const mnemonicResult = await new Promise((resolve, reject) => {
-            db.get('SELECT COUNT(*) as count FROM mnemonics', (err, row) => {
-                if (err) reject(err);
-                else resolve(row.count);
-            });
-        });
-        stats.totalMnemonics = mnemonicResult;
+        const mnemonicResult = await db.get('SELECT COUNT(*) as count FROM mnemonics');
+        stats.totalMnemonics = mnemonicResult.count;
 
         // Total wallets
-        const walletResult = await new Promise((resolve, reject) => {
-            db.get('SELECT COUNT(*) as count FROM wallets', (err, row) => {
-                if (err) reject(err);
-                else resolve(row.count);
-            });
-        });
-        stats.totalWallets = walletResult;
+        const walletResult = await db.get('SELECT COUNT(*) as count FROM wallets');
+        stats.totalWallets = walletResult.count;
 
         // Total active wallets
-        const activeWalletResult = await new Promise((resolve, reject) => {
-            db.get('SELECT COUNT(DISTINCT wallet_address) as count FROM active_wallets', (err, row) => {
-                if (err) reject(err);
-                else resolve(row.count);
-            });
-        });
-        stats.totalActiveWallets = activeWalletResult;
+        const activeWalletResult = await db.get('SELECT COUNT(DISTINCT wallet_address) as count FROM active_wallets');
+        stats.totalActiveWallets = activeWalletResult.count;
 
         // Active wallets by chain
-        const chainStats = await new Promise((resolve, reject) => {
-            db.all('SELECT chain_name, COUNT(*) as count FROM active_wallets GROUP BY chain_name', (err, rows) => {
-                if (err) reject(err);
-                else resolve(rows);
-            });
-        });
+        const chainStats = await db.all('SELECT chain_name, COUNT(*) as count FROM active_wallets GROUP BY chain_name');
         chainStats.forEach(stat => {
             stats.activeWalletsByChain[stat.chain_name] = stat.count;
         });
@@ -256,17 +237,16 @@ async function getStats(db) {
 }
 
 // Main processing
-let totalMnemonics = 0;
-
 async function processBulkMnemonics(count = 10, chunkSize = 5) {
-    const db = initializeDatabase();
-    totalMnemonics = count;
-    startTime = Date.now();
-    
-    console.log(`Processing ${count} mnemonic phrases (chunk size: ${chunkSize})`);
-    console.log('Starting process...\n');
-
+    let db;
     try {
+        db = await initializeDatabase();
+        totalMnemonics = count;
+        startTime = Date.now();
+        
+        console.log(`Processing ${count} mnemonic phrases (chunk size: ${chunkSize})`);
+        console.log('Starting process...\n');
+
         // Get statistics before processing
         const beforeStats = await getStats(db);
 
@@ -314,12 +294,10 @@ async function processBulkMnemonics(count = 10, chunkSize = 5) {
     } catch (error) {
         console.error('\nBulk processing error:', error);
     } finally {
-        db.close((err) => {
-            if (err) {
-                console.error('Database connection error:', err.message);
-            }
+        if (db) {
+            await db.close();
             console.log('\nDatabase connection closed');
-        });
+        }
     }
 }
 
