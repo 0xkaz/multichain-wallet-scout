@@ -73,7 +73,13 @@ help:
 	@echo "  make bulk-large   - Process 50 mnemonics"
 	@echo "  make watch-quick  - Watch mode with 2s interval"
 	@echo "  make watch-slow   - Watch mode with 10s interval"
+	@echo "  make test-mail    - Test email notification configuration"
 	@echo "  make clean    - Remove node_modules and database"
 	@echo "  make help     - Show this help message"
 
-.PHONY: generate watch status active bulk-small bulk-medium bulk-large watch-quick watch-slow clean help
+# Test commands
+test-mail: node_modules
+	@echo "Testing email configuration..."
+	npm run test:mail
+
+.PHONY: generate watch status active bulk-small bulk-medium bulk-large watch-quick watch-slow clean help test-mail

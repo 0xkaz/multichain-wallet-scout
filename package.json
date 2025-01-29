@@ -9,6 +9,7 @@
     "active": "node show-active-wallets.js",
     "status": "node show-status.js",
     "test": "node test-transaction-check.js",
+    "test:mail": "node test-mail.js",
     "watch:quick": "node watch.js --interval 2",
     "watch:slow": "node watch.js --interval 10",
     "bulk:small": "node bulk.js 5 2",
@@ -26,8 +27,10 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "axios": "^1.0.0",
+    "dotenv": "^16.4.7",
     "ethers": "^6.0.0",
-    "sqlite3": "^5.0.0",
-    "axios": "^1.0.0"
+    "nodemailer": "^6.10.0",
+    "sqlite3": "^5.0.0"
   }
 }

@@ -1,3 +1,4 @@
+
 # Multi-Chain Wallet Generator and Transaction Checker
 
 A Node.js application that generates Ethereum-compatible wallets and checks for transactions across multiple blockchain networks.
@@ -21,12 +22,16 @@ A Node.js application that generates Ethereum-compatible wallets and checks for 
 - Periodic execution with customizable intervals
 - Comprehensive npm scripts for various operations
 - Make commands for easy execution
+- Email notifications for active wallet discovery
+- SMTP integration for notifications
+- Test suite for email functionality
 
 ## Prerequisites
 
 - Node.js (v16 or higher)
 - npm (Node Package Manager)
 - make (for Make commands)
+- SMTP server access for email notifications
 
 ## Installation
 
@@ -43,7 +48,47 @@ npm install
 make
 ```
 
-3. Configure RPC endpoints (if needed) in `lib.js`
+3. Configure environment variables:
+```bash
+# Copy the example environment file
+cp .env.example .env
+
+# Edit .env with your email settings
+nano .env
+```
+
+4. Configure RPC endpoints (if needed) in `lib.js`
+
+## Email Configuration
+
+Set up email notifications by configuring the following variables in your `.env` file:
+
+```env
+# SMTP Configuration
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-specific-password
+NOTIFICATION_EMAIL=recipient@example.com
+
+# Email Notification Settings
+EMAIL_SUBJECT="Active Wallet Found!"
+EMAIL_FROM_NAME="Wallet Scout"
+```
+
+For Gmail users:
+1. Enable 2-factor authentication
+2. Generate an App Password
+3. Use the App Password as SMTP_PASS
+
+Test your email configuration:
+```bash
+# Using npm
+npm run test:mail
+
+# Using make
+make test-mail
+```
 
 ## Usage
 
