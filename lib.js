@@ -30,11 +30,12 @@ const CHAINS = {
     base: {
         name: 'Base Chain',
         rpc: 'https://mainnet.base.org'
-    },
-    optimism: {
-        name: 'OP Mainnet',
-        rpc: 'https://mainnet.optimism.io'
     }
+    // ,
+    // optimism: {
+    //     name: 'OP Mainnet',
+    //     rpc: 'https://mainnet.optimism.io'
+    // }
 };
 
 // Email configuration
